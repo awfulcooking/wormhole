@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+  <script>
+    const LOCAL_URL = "ws://localhost:4455";
+    const WORMHOLE_URL = "ws://localhost:55000";
+
+    class HostController {
+      wormhole
+      localURL
+      pipes = new Map()
+
+      constructor(wormholeURL = WORMHOLE_URL, localURL = LOCAL_URL) {
+        this.localURL = localURL;
+
+        this.wormhole = new WebSocket(serverURL);
+        this.wormhole.addEventListener("open", () => {
+          console.debug("Connected to wormhole server");
+        });
+        this.wormhole.addEventListener("message", this.handleMessage);
+        this.wormhole.addEventListener("close", (ex) => {
+          console.debug("Disconnected from wormhole server", ex);
+        });
+      }
+
+      handleMessage = async (text) => {
+        const { pipeID, state, message } = JSON.parse(text);
+
+        if (state === "new") {
+          this.openPipe(pipeID);
+        } else if (state === "closed") {
+          this.closePipe(pipeID);
+        } else if (message) {
+          this.writePipe(pipeID, message);
+        } else {
+          console.warn("Alien message from wormhole", text);
+        }
+      }
+
+      send(msg) {
+        console.debug("Send to control", msg);
+        this.controlSocket.write(JSON.stringify(msg));
+      }
+
+      openPipe(pipeID) {
+        const pipe = new WebSocket(this.localURL);
+        pipes.set(pipeID, pipe);
+
+        pipe.addEventListener("open", () => {
+          this.wormhole.send({ pipeID, state: "open" });
+        });
+
+        pipe.addEventListener("close", () => {
+          this.wormhole.send({ pipeID, state: "closed" });
+        });
+
+        pipe.addEventListener("error", () => {
+          this.wormhole.send({ pipeID, state: "error" });
+        });
+
+        pipe.addEventListener("message", (message) => {
+          this.wormhole.send({ pipeID, message });
+        });
+      }
+
+      closePipe(id) {
+        this.pipes.get(id).close();
+        // sendToControl({ pipeID, state: "closed" });
+      }
+      
+      writePipe(id, message) {
+        const { socket } = this.pipes.get(id);
+        socket.send(message);
+      }
+    }
+
+    class PipeExistsError extends Error {};
+    class PipeNotFoundError extends Error {};
+  </script>
+
+  <script>
+    const controller = new HostController();
+  </script>
+</body>
+</html>
