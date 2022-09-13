@@ -76,12 +76,12 @@
 
       closePipe(id) {
         this.pipes.get(id).close();
-        // sendToControl({ pipeID, state: "closed" });
       }
       
       writePipe(id, data, dataType) {
-        const { socket } = this.pipes.get(id);
-        if (dataType !== 0) {
+        console.log("Write to downstream", id, data, dataType)
+        const socket = this.pipes.get(id);
+        if (dataType && dataType !== 0) {
           console.error("unrecognised data type", dataType);
           return;
         }
