@@ -14,6 +14,7 @@ type PipeHandler struct {
 func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		OriginPatterns: []string{"*"},
+		Subprotocols:   []string{r.Header.Get("Sec-WebSocket-Protocol")},
 	})
 	if err != nil {
 		println("pipe accept err:", err.Error())
