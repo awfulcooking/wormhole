@@ -116,5 +116,6 @@ func (c *Controller) Shutdown() error {
 	for _, pipe := range c.pipes {
 		pipe.Close()
 	}
-	return nil
+
+	return c.Host.Close()
 }
