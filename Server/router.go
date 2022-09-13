@@ -6,20 +6,23 @@ import (
 )
 
 type Router struct {
-	Printf      func(string, ...interface{})
+	Config      ServerConfig
 	Controllers *ControllerPool
 }
 
-func NewRouter(printf func(string, ...any)) *Router {
+func NewRouter(cfg ServerConfig) *Router {
 	return &Router{
-		Printf:      printf,
+		Config:      cfg,
 		Controllers: NewControllerPool(),
 	}
 }
 
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
-		ControllerHandler{Pool: h.Controllers}.ServeHTTP(w, r)
+		ControllerHandler{
+			Pool:      h.Controllers,
+			ReadLimit: h.Config.WebsocketReadLimit,
+		}.ServeHTTP(w, r)
 	} else {
 		name := strings.TrimPrefix(r.URL.Path, "/")
 		controller := h.Controllers.Get(name)
@@ -32,6 +35,7 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		PipeHandler{
 			Controller: controller,
+			ReadLimit:  h.Config.WebsocketReadLimit,
 		}.ServeHTTP(w, r)
 	}
 }

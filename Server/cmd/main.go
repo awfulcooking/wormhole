@@ -28,7 +28,7 @@ func main() {
 // with all requests handled by a wormhole.WebsocketHandler
 func Run(addr string) error {
 	routes := http.NewServeMux()
-	routes.Handle("/", wormhole.NewRouter(log.Printf))
+	routes.Handle("/", wormhole.NewRouter(wormhole.DefaultServerConfig()))
 
 	server := &http.Server{
 		Handler:      routes,

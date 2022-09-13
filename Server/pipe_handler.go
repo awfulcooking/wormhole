@@ -10,6 +10,7 @@ import (
 
 type PipeHandler struct {
 	Controller *Controller
+	ReadLimit  int64
 }
 
 func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +22,8 @@ func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println("pipe accept err:", err.Error())
 		return
 	}
+
+	ws.SetReadLimit(h.ReadLimit)
 
 	client := WebsocketPipeClient{ws, r.Context()}
 	pipe, err := h.Controller.RequestPipe(r.Context(), client, r.Header.Get("Sec-WebSocket-Protocol"))

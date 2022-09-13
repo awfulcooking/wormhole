@@ -13,7 +13,8 @@ import (
 const WebsocketSubprotocol = "awful.cooking/wormhole"
 
 type ControllerHandler struct {
-	Pool *ControllerPool
+	Pool      *ControllerPool
+	ReadLimit int64
 }
 
 func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +27,8 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Controller accept error: %v", err)
 		return
 	}
+
+	ws.SetReadLimit(h.ReadLimit)
 
 	defer ws.Close(websocket.StatusInternalError, "zombie websocket")
 
