@@ -48,6 +48,8 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Slug: slug,
 	})
 
+	defer controller.Shutdown()
+
 	for {
 		err = controller.ProcessNext()
 

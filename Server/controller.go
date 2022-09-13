@@ -108,3 +108,13 @@ func (c *Controller) PipeFromClient(pipeID PipeID, data []byte, dataType DataTyp
 		DataType: dataType,
 	})
 }
+
+func (c *Controller) Shutdown() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	for _, pipe := range c.pipes {
+		pipe.Close()
+	}
+	return nil
+}
