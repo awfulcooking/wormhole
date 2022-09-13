@@ -4,6 +4,13 @@ import (
 	"time"
 )
 
+type Pipe struct {
+	ID         PipeID
+	Client     PipeClient
+	State      PipeState
+	resolution chan error
+}
+
 type PipeState string
 
 const (
@@ -12,25 +19,18 @@ const (
 	Closed  PipeState = "closed"
 )
 
-type PipeDataType int
-
-const (
-	DataUTF8 PipeDataType = iota
-	DataBinary
-)
-
 type PipeClient interface {
-	Read() ([]byte, PipeDataType, error)
-	Write([]byte, PipeDataType) error
+	Read() ([]byte, DataType, error)
+	Write([]byte, DataType) error
 	Close(error) error
 }
 
-type Pipe struct {
-	ID         PipeID
-	Client     PipeClient
-	State      PipeState
-	resolution chan error
-}
+type DataType int
+
+const (
+	DataUTF8 DataType = iota
+	DataBinary
+)
 
 func NewPipe(id PipeID, client PipeClient) *Pipe {
 	return &Pipe{
@@ -67,6 +67,7 @@ func (p *Pipe) Reject(err error) {
 
 func (p *Pipe) Close() {
 	p.State = Closed
+	p.Client.Close(nil)
 }
 
 func (p *Pipe) Run(controller *Controller) error {

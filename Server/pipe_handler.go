@@ -2,6 +2,7 @@ package wormhole
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"nhooyr.io/websocket"
@@ -17,7 +18,7 @@ func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Subprotocols:   []string{r.Header.Get("Sec-WebSocket-Protocol")},
 	})
 	if err != nil {
-		println("pipe accept err:", err.Error())
+		log.Println("pipe accept err:", err.Error())
 		return
 	}
 
@@ -25,7 +26,7 @@ func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pipe, err := h.Controller.RequestPipe(r.Context(), client, r.Header.Get("Sec-WebSocket-Protocol"))
 
 	if err != nil {
-		println("couldn't open pipe: ", err)
+		log.Println("couldn't open pipe: ", err)
 		ws.Close(websocket.StatusBadGateway, "couldn't open pipe")
 		return
 	}
@@ -42,22 +43,22 @@ type WebsocketPipeClient struct {
 	context.Context
 }
 
-var websocketMessageTypes = map[PipeDataType]websocket.MessageType{
+var websocketMessageTypes = map[DataType]websocket.MessageType{
 	DataUTF8:   websocket.MessageText,
 	DataBinary: websocket.MessageBinary,
 }
 
-var websocketDataTypes = map[websocket.MessageType]PipeDataType{
+var websocketDataTypes = map[websocket.MessageType]DataType{
 	websocket.MessageText:   DataUTF8,
 	websocket.MessageBinary: DataBinary,
 }
 
-func (c WebsocketPipeClient) Read() ([]byte, PipeDataType, error) {
+func (c WebsocketPipeClient) Read() ([]byte, DataType, error) {
 	msgType, data, err := c.Conn.Read(c.Context)
 	return data, websocketDataTypes[msgType], err
 }
 
-func (c WebsocketPipeClient) Write(data []byte, dataType PipeDataType) error {
+func (c WebsocketPipeClient) Write(data []byte, dataType DataType) error {
 	return c.Conn.Write(c.Context, websocketMessageTypes[dataType], data)
 }
 

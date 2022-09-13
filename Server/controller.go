@@ -100,7 +100,7 @@ func (c *Controller) NextPipeID() PipeID {
 	return PipeID(atomic.AddUint64(&c.nextPipeID, 1))
 }
 
-func (c *Controller) PipeFromClient(pipeID PipeID, data []byte, dataType PipeDataType) error {
+func (c *Controller) PipeFromClient(pipeID PipeID, data []byte, dataType DataType) error {
 	dataStr := string(data)
 	return c.Host.WriteControllerPacket(ControllerPacket{
 		PipeID:   pipeID,

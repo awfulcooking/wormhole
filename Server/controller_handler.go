@@ -18,12 +18,12 @@ type ControllerHandler struct {
 
 func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ws, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		Subprotocols:   []string{WebsocketSubprotocol},
 		OriginPatterns: []string{"*"},
+		Subprotocols:   []string{WebsocketSubprotocol},
 	})
 
 	if err != nil {
-		log.Printf("%v", err)
+		log.Printf("Controller accept error: %v", err)
 		return
 	}
 
@@ -34,13 +34,10 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// todo: generate human id for controller: https://github.com/bojand/hri
-	// todo: store controller in map by id
-
 	host := WebsocketJSONControllerHost{Conn: ws}
 	controller := NewController(r.Context(), host)
-
 	slug := hri.Random()
+
 	h.Pool.SetUniq(slug, controller)
 	defer h.Pool.Delete(slug)
 
@@ -90,5 +87,5 @@ func (h WebsocketJSONControllerHost) WriteControllerPacket(packet ControllerPack
 }
 
 func (h WebsocketJSONControllerHost) Close() error {
-	return h.Close()
+	return h.Conn.Close(websocket.StatusNormalClosure, "")
 }
