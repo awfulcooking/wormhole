@@ -1,26 +1,40 @@
 package wormhole
 
 import (
-	"io"
 	"time"
 )
 
-type PipeState int
+type PipeState string
 
 const (
-	Pending PipeState = iota
-	Opened
-	Closed
+	Pending PipeState = "pending"
+	Opened  PipeState = "opened"
+	Closed  PipeState = "closed"
 )
 
+type PipeDataType int
+
+const (
+	DataUTF8 PipeDataType = iota
+	DataBinary
+)
+
+type PipeClient interface {
+	Read() ([]byte, PipeDataType, error)
+	Write([]byte, PipeDataType) error
+	Close(error) error
+}
+
 type Pipe struct {
-	Client     io.ReadWriteCloser
+	ID         PipeID
+	Client     PipeClient
 	State      PipeState
 	resolution chan error
 }
 
-func NewPipe(client io.ReadWriteCloser) *Pipe {
+func NewPipe(id PipeID, client PipeClient) *Pipe {
 	return &Pipe{
+		ID:         id,
 		Client:     client,
 		State:      Pending,
 		resolution: make(chan error, 1),
@@ -53,4 +67,22 @@ func (p *Pipe) Reject(err error) {
 
 func (p *Pipe) Close() {
 	p.State = Closed
+}
+
+func (p *Pipe) Run(controller *Controller) error {
+	if p.State != Opened {
+		panic("tried to run non-open pipe")
+	}
+
+	for {
+		data, dataType, err := p.Client.Read()
+
+		if err != nil {
+			return err
+		}
+
+		if err := controller.PipeFromClient(p.ID, data, dataType); err != nil {
+			return err
+		}
+	}
 }

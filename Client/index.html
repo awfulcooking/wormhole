@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <title>Wormhole</title>
 </head>
 <body>
   <script>
-    const LOCAL_URL = "ws://localhost:4455";
+    // const LOCAL_URL = "ws://localhost:4455";
+    const LOCAL_URL = "ws://localhost:55001";
     const WORMHOLE_URL = "ws://localhost:55000";
 
     class HostController {
@@ -16,7 +18,7 @@
       constructor(wormholeURL = WORMHOLE_URL, localURL = LOCAL_URL) {
         this.localURL = localURL;
 
-        this.wormhole = new WebSocket(serverURL);
+        this.wormhole = new WebSocket(wormholeURL, "awful.cooking/wormhole");
         this.wormhole.addEventListener("open", () => {
           console.debug("Connected to wormhole server");
         });
@@ -26,43 +28,49 @@
         });
       }
 
-      handleMessage = async (text) => {
-        const { pipeID, state, message } = JSON.parse(text);
+      handleMessage = async (event) => {
+        console.debug("Received message", event.data);
+        const { pipeID, state, data, dataType, subprotocol, meta } = JSON.parse(event.data);
 
-        if (state === "new") {
-          this.openPipe(pipeID);
+        if (state === "pending") {
+          this.openPipe(pipeID, subprotocol);
         } else if (state === "closed") {
           this.closePipe(pipeID);
-        } else if (message) {
-          this.writePipe(pipeID, message);
+        } else if (data) {
+          this.writePipe(pipeID, data, dataType);
+        } else if (meta) {
+          console.info("Got slug", meta.slug);
+          this.slug = meta.slug;
         } else {
-          console.warn("Alien message from wormhole", text);
+          console.warn("Alien message from wormhole", event.data);
         }
       }
 
       send(msg) {
         console.debug("Send to control", msg);
-        this.controlSocket.write(JSON.stringify(msg));
+        this.wormhole.send(JSON.stringify(msg));
       }
 
-      openPipe(pipeID) {
-        const pipe = new WebSocket(this.localURL);
-        pipes.set(pipeID, pipe);
+      openPipe(pipeID, subprotocol) {
+        const pipe = new WebSocket(this.localURL, subprotocol);
+        this.pipes.set(pipeID, pipe);
 
         pipe.addEventListener("open", () => {
-          this.wormhole.send({ pipeID, state: "open" });
+          this.send({ pipeID, state: "opened" });
         });
 
-        pipe.addEventListener("close", () => {
-          this.wormhole.send({ pipeID, state: "closed" });
+        pipe.addEventListener("close", (e) => {
+          console.info("Downstream disconnected", e)
+          this.send({ pipeID, state: "closed" });
         });
 
         pipe.addEventListener("error", () => {
-          this.wormhole.send({ pipeID, state: "error" });
+          this.send({ pipeID, state: "error" });
         });
 
-        pipe.addEventListener("message", (message) => {
-          this.wormhole.send({ pipeID, message });
+        pipe.addEventListener("message", (event) => {
+          console.debug("msg from dwonstream", event)
+          this.send({ pipeID, data: event.data, dataType: 0 });
         });
       }
 
@@ -71,9 +79,13 @@
         // sendToControl({ pipeID, state: "closed" });
       }
       
-      writePipe(id, message) {
+      writePipe(id, data, dataType) {
         const { socket } = this.pipes.get(id);
-        socket.send(message);
+        if (dataType !== 0) {
+          console.error("unrecognised data type", dataType);
+          return;
+        }
+        socket.send(data);
       }
     }
 

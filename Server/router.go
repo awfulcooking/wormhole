@@ -19,7 +19,7 @@ func NewRouter(printf func(string, ...any)) *Router {
 
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
-		ControllerHandler{Printf: h.Printf}.ServeHTTP(w, r)
+		ControllerHandler{Pool: h.Controllers}.ServeHTTP(w, r)
 	} else {
 		name := strings.TrimPrefix(r.URL.Path, "/")
 		controller := h.Controllers.Get(name)
