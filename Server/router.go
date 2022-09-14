@@ -1,6 +1,7 @@
 package wormhole
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -18,6 +19,8 @@ func NewRouter(cfg ServerConfig) *Router {
 }
 
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("Request to", r.URL)
+
 	if r.URL.Path == "/" {
 		ControllerHandler{
 			Pool:          h.Controllers,
