@@ -35,6 +35,7 @@ func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := pipe.Run(h.Controller); err != nil {
+		log.Println("pipe error:", err.Error())
 		ws.Close(websocket.StatusGoingAway, err.Error())
 	} else {
 		ws.Close(websocket.StatusNormalClosure, "thanks for flying awful.cooking/wormhole. why not leave a review on tripadvisor?")
