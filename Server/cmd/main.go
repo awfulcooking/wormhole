@@ -35,8 +35,6 @@ func Run(addr string) error {
 	server := &http.Server{
 		Handler:           routes,
 		ReadHeaderTimeout: time.Second * 10,
-		ReadTimeout:       time.Second * 30,
-		WriteTimeout:      time.Second * 10,
 	}
 
 	if l, err := net.Listen("tcp", addr); err != nil {
