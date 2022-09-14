@@ -27,7 +27,7 @@ func main() {
 func Run(addr string) error {
 	config := wormhole.DefaultServerConfig()
 	config.NameGenerator = HumanNameGenerator
-	config.WebsocketReadLimit = -1
+	config.WebsocketReadLimit = 100 * 1024 * 1024
 
 	routes := http.NewServeMux()
 	routes.Handle("/", wormhole.NewRouter(config))
