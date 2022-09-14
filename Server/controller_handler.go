@@ -50,15 +50,17 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer h.Pool.Delete(controller.Name)
 
 	controller.SendWelcome()
+	defer log.Println("end of controller handler")
 	defer controller.Shutdown()
 
 	for {
 		err = controller.ProcessNext()
 
 		if websocket.CloseStatus(err) == websocket.StatusNormalClosure {
+			log.Println(h, "host exited normally")
 			return
 		} else if err != nil {
-			log.Printf("Controller error [%v]: %v", r.RemoteAddr, err.Error())
+			log.Printf("%v error (%v): %v", h, r.RemoteAddr, err.Error())
 			return
 		}
 	}
@@ -101,5 +103,6 @@ func (h *WebsocketJSONControllerHost) write(buf []byte) error {
 }
 
 func (h *WebsocketJSONControllerHost) Close() error {
-	return h.Conn.Close(websocket.StatusNormalClosure, "")
+	log.Println(h, "closing (server initiated)")
+	return h.Conn.Close(websocket.StatusNormalClosure, "closing")
 }
