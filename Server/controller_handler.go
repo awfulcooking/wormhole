@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 
 	"nhooyr.io/websocket"
 )
@@ -37,7 +38,7 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	host := WebsocketJSONControllerHost{Conn: ws}
+	host := &WebsocketJSONControllerHost{Conn: ws}
 	controller := NewController(r.Context(), host)
 
 	if err := h.NameGenerator.Assign(h.Pool, controller, 3); err != nil {
@@ -65,11 +66,12 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type WebsocketJSONControllerHost struct {
 	*websocket.Conn
+	sync.Mutex
 }
 
-var _ ControllerHost = WebsocketJSONControllerHost{}
+var _ ControllerHost = &WebsocketJSONControllerHost{}
 
-func (h WebsocketJSONControllerHost) ReadControllerPacket() (ControllerPacket, error) {
+func (h *WebsocketJSONControllerHost) ReadControllerPacket() (ControllerPacket, error) {
 	var packet ControllerPacket
 
 	if _, buf, err := h.Read(context.Background()); err != nil {
@@ -83,15 +85,21 @@ func (h WebsocketJSONControllerHost) ReadControllerPacket() (ControllerPacket, e
 	}
 }
 
-func (h WebsocketJSONControllerHost) WriteControllerPacket(packet ControllerPacket) error {
+func (h *WebsocketJSONControllerHost) WriteControllerPacket(packet ControllerPacket) error {
 	if buf, err := json.Marshal(packet); err != nil {
 		return err
-	} else if err := h.Write(context.Background(), websocket.MessageText, buf); err != nil {
-		return err
+	} else {
+		return h.write(buf)
 	}
-	return nil
 }
 
-func (h WebsocketJSONControllerHost) Close() error {
+func (h *WebsocketJSONControllerHost) write(buf []byte) error {
+	h.Lock()
+	defer h.Unlock()
+
+	return h.Write(context.Background(), websocket.MessageText, buf)
+}
+
+func (h *WebsocketJSONControllerHost) Close() error {
 	return h.Conn.Close(websocket.StatusNormalClosure, "")
 }
