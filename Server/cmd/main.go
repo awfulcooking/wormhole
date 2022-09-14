@@ -31,9 +31,10 @@ func Run(addr string) error {
 	routes.Handle("/", wormhole.NewRouter(wormhole.DefaultServerConfig()))
 
 	server := &http.Server{
-		Handler:      routes,
-		ReadTimeout:  time.Second * 10,
-		WriteTimeout: time.Second * 10,
+		Handler:           routes,
+		ReadHeaderTimeout: time.Second * 10,
+		ReadTimeout:       time.Second * 30,
+		WriteTimeout:      time.Second * 10,
 	}
 
 	if l, err := net.Listen("tcp", addr); err != nil {
