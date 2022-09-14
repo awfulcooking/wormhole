@@ -13,8 +13,6 @@ import (
 )
 
 func main() {
-	log.SetFlags(0)
-
 	if len(os.Args) < 2 {
 		log.Fatal("please provide an address to listen on as the first argument")
 	}
