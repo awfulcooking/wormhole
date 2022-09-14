@@ -40,12 +40,10 @@ func (c *Controller) SendWelcome() error {
 }
 
 func (c *Controller) ProcessNext() error {
-	println("asked to read")
 	packet, err := c.Host.ReadControllerPacket()
 	if err != nil {
 		return err
 	}
-	println("successful controller packet read")
 	return c.Process(packet)
 }
 
@@ -125,4 +123,8 @@ func (c *Controller) Shutdown() error {
 	}
 
 	return c.Host.Close()
+}
+
+func (c *Controller) String() string {
+	return "[controller " + c.Name + "]"
 }

@@ -24,7 +24,7 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		log.Printf("Controller accept error: %v", err)
+		log.Printf("ControllerHandler accept error: %v", err)
 		return
 	}
 
@@ -33,7 +33,7 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close(websocket.StatusInternalError, "zombie websocket")
 
 	if ws.Subprotocol() != WebsocketSubprotocol {
-		ws.Close(websocket.StatusPolicyViolation, "bad subprotocol")
+		ws.Close(websocket.StatusPolicyViolation, "wrong subprotocol")
 		return
 	}
 
