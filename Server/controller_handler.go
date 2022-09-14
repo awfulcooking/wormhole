@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bojand/hri"
 	"nhooyr.io/websocket"
 )
 
@@ -15,6 +14,7 @@ const WebsocketSubprotocol = "awful.cooking/wormhole"
 type ControllerHandler struct {
 	Pool      *ControllerPool
 	ReadLimit int64
+	NameGenerator
 }
 
 func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -39,15 +39,16 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	host := WebsocketJSONControllerHost{Conn: ws}
 	controller := NewController(r.Context(), host)
-	slug := hri.Random()
 
-	h.Pool.SetUniq(slug, controller)
-	defer h.Pool.Delete(slug)
+	if err := h.NameGenerator.Assign(h.Pool, controller, 3); err != nil {
+		log.Printf("couldn't generate unique controller name: %v", err)
+		ws.Close(websocket.StatusTryAgainLater, "")
+		return
+	}
 
-	controller.SendMeta(ControllerMeta{
-		Slug: slug,
-	})
+	defer h.Pool.Delete(controller.Name)
 
+	controller.SendWelcome()
 	defer controller.Shutdown()
 
 	for {

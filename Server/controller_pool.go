@@ -1,13 +1,14 @@
 package wormhole
 
 import (
-	"errors"
 	"sync"
 )
 
 type ControllerPool struct {
 	controllers map[string]*Controller
 	mutex       sync.RWMutex
+
+	NameGenerator func() string
 }
 
 func NewControllerPool() *ControllerPool {
@@ -23,14 +24,15 @@ func (p *ControllerPool) Get(name string) *Controller {
 	return p.controllers[name]
 }
 
-func (p *ControllerPool) SetUniq(name string, c *Controller) error {
+func (p *ControllerPool) SetUniq(name string, c *Controller) (success bool) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
-	if _, exists := p.controllers[name]; exists {
-		return errors.New("controller name already in use: " + name)
+
+	if _, found := p.controllers[name]; found {
+		return false
 	}
 	p.controllers[name] = c
-	return nil
+	return true
 }
 
 func (p *ControllerPool) Delete(name string) *Controller {

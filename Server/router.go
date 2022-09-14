@@ -20,8 +20,9 @@ func NewRouter(cfg ServerConfig) *Router {
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		ControllerHandler{
-			Pool:      h.Controllers,
-			ReadLimit: h.Config.WebsocketReadLimit,
+			Pool:          h.Controllers,
+			ReadLimit:     h.Config.WebsocketReadLimit,
+			NameGenerator: h.Config.NameGenerator,
 		}.ServeHTTP(w, r)
 	} else {
 		name := strings.TrimPrefix(r.URL.Path, "/")

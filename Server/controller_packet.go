@@ -12,7 +12,7 @@ type ControllerPacket struct {
 }
 
 type ControllerMeta struct {
-	Slug string `json:"slug"`
+	Name string `json:"name"`
 }
 
 type ControllerPacketReader interface {

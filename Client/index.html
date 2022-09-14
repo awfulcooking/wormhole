@@ -14,6 +14,7 @@
       wormhole
       localURL
       pipes = new Map()
+      name
 
       constructor(wormholeURL = WORMHOLE_URL, localURL = LOCAL_URL) {
         this.localURL = localURL;
@@ -39,8 +40,8 @@
         } else if (data) {
           this.writePipe(pipeID, data, dataType);
         } else if (meta) {
-          console.info("Got slug", meta.slug);
-          this.slug = meta.slug;
+          console.info("Got name", meta.name);
+          this.name = meta.name;
         } else {
           console.warn("Alien message from wormhole", event.data);
         }

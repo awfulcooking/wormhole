@@ -11,6 +11,7 @@ import (
 type Controller struct {
 	context context.Context
 	Host    ControllerHost
+	Name    string
 
 	pipes map[PipeID]*Pipe
 	mutex sync.RWMutex
@@ -29,6 +30,12 @@ func NewController(ctx context.Context, host ControllerHost) *Controller {
 func (c *Controller) SendMeta(meta ControllerMeta) error {
 	return c.Host.WriteControllerPacket(ControllerPacket{
 		Meta: &meta,
+	})
+}
+
+func (c *Controller) SendWelcome() error {
+	return c.SendMeta(ControllerMeta{
+		Name: c.Name,
 	})
 }
 

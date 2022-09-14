@@ -27,8 +27,11 @@ func main() {
 // Run starts a http.Server for the passed in address
 // with all requests handled by a wormhole.WebsocketHandler
 func Run(addr string) error {
+	config := wormhole.DefaultServerConfig()
+	config.NameGenerator = HumanNameGenerator
+
 	routes := http.NewServeMux()
-	routes.Handle("/", wormhole.NewRouter(wormhole.DefaultServerConfig()))
+	routes.Handle("/", wormhole.NewRouter(config))
 
 	server := &http.Server{
 		Handler:           routes,
