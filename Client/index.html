@@ -3,8 +3,14 @@
 <head>
   <meta charset="utf-8">
   <title>Wormhole</title>
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
+  <main wormhole-app>
+    <h1>wormhole</h1>
+    <h2 wormhole-name>connecting..</h2>
+  </main>
+
   <script>
     // const LOCAL_URL = "ws://localhost:4455";
     const LOCAL_URL = "ws://localhost:55001";
@@ -42,6 +48,7 @@
         } else if (meta) {
           console.info("Got name", meta.name);
           this.name = meta.name;
+          this.onMeta?.(meta);
         } else {
           console.warn("Alien message from wormhole", event.data);
         }
@@ -95,7 +102,12 @@
   </script>
 
   <script>
+    const $ = document.querySelector.bind(document);
     const controller = new HostController();
+
+    controller.onMeta = ({ name }) => {
+      $('[wormhole-name]').innerText = name;
+    };
   </script>
 </body>
 </html>
