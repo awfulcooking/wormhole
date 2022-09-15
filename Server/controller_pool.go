@@ -7,8 +7,6 @@ import (
 type ControllerPool struct {
 	controllers map[string]*Controller
 	mutex       sync.RWMutex
-
-	NameGenerator func() string
 }
 
 func NewControllerPool() *ControllerPool {
