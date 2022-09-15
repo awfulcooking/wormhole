@@ -10,7 +10,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-const WebsocketSubprotocol = "awful.cooking/wormhole"
+const WebsocketSubprotocol = "wormhole.awful.cooking"
 
 type ControllerHandler struct {
 	Pool      *ControllerPool

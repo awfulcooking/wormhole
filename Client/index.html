@@ -25,7 +25,7 @@
       constructor(wormholeURL = WORMHOLE_URL, localURL = LOCAL_URL) {
         this.localURL = localURL;
 
-        this.wormhole = new WebSocket(wormholeURL, "awful.cooking/wormhole");
+        this.wormhole = new WebSocket(wormholeURL, "wormhole.awful.cooking");
         this.wormhole.addEventListener("open", () => {
           console.debug("Connected to wormhole server");
         });
