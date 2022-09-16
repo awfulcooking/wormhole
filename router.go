@@ -26,6 +26,11 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[%d] Request to %s", id, r.URL)
 	defer log.Printf("[%d] Request finished (%s)", id, r.URL)
 
+	if r.Header.Get("Upgrade") != "websocket" {
+		h.ServeStatic(w, r)
+		return
+	}
+
 	if r.URL.Path == "/" {
 		ControllerHandler{
 			Pool:          h.Controllers,
@@ -46,5 +51,15 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Controller: controller,
 			ReadLimit:  h.Config.WebsocketReadLimit,
 		}.ServeHTTP(w, r)
+	}
+}
+
+func (h *Router) ServeStatic(w http.ResponseWriter, r *http.Request) {
+	if fs := h.Config.StaticFS; fs == nil {
+		w.WriteHeader(404)
+		w.Write(nil)
+	} else {
+		handler := http.FileServer(http.FS(fs))
+		handler.ServeHTTP(w, r)
 	}
 }
