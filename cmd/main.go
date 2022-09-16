@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net"
 	"net/http"
@@ -12,23 +13,30 @@ import (
 	"awful.cooking/wormhole"
 )
 
+var staticDir = flag.String("staticDir", "", "directory from which to serve static web files. if omitted, an embedded copy of the controller app will be served.")
+
 func main() {
-	if len(os.Args) < 2 {
+	flag.Parse()
+
+	config := wormhole.DefaultServerConfig()
+	config.NameGenerator = HumanNameGenerator
+	config.WebsocketReadLimit = 100 * 1024 * 1024
+	if *staticDir != "" {
+		config.StaticFS = os.DirFS(*staticDir)
+	}
+
+	if len(flag.Args()) == 0 {
 		log.Fatal("please provide an address to listen on as the first argument")
 	}
 
-	if err := Run(os.Args[1]); err != nil {
+	if err := Run(flag.Arg(0), config); err != nil {
 		log.Fatal(err)
 	}
 }
 
 // Run starts a http.Server for the passed in address
 // with all requests handled by a wormhole.WebsocketHandler
-func Run(addr string) error {
-	config := wormhole.DefaultServerConfig()
-	config.NameGenerator = HumanNameGenerator
-	config.WebsocketReadLimit = 100 * 1024 * 1024
-
+func Run(addr string, config wormhole.ServerConfig) error {
 	routes := http.NewServeMux()
 	routes.Handle("/", wormhole.NewRouter(config))
 
