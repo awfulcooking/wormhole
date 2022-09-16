@@ -8,9 +8,9 @@ import (
 )
 
 type Router struct {
-	Config      ServerConfig
-	Controllers *ControllerPool
-	requestID   atomic.Uint64
+	Config       ServerConfig
+	Controllers  *ControllerPool
+	requestCount atomic.Uint64
 }
 
 func NewRouter(cfg ServerConfig) *Router {
@@ -21,7 +21,8 @@ func NewRouter(cfg ServerConfig) *Router {
 }
 
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	id := h.requestID.Add(1)
+	id := h.requestCount.Add(1)
+
 	log.Printf("[%d] Request to %s", id, r.URL)
 	defer log.Printf("[%d] Request finished (%s)", id, r.URL)
 
