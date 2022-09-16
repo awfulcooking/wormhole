@@ -12,9 +12,8 @@
   </main>
 
   <script>
-    // const LOCAL_URL = "ws://localhost:4455";
-    const LOCAL_URL = "ws://localhost:55001";
-    const WORMHOLE_URL = "ws://localhost:55000";
+    const LOCAL_URL = "ws://localhost:4444";
+    const WORMHOLE_URL = (location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + location.pathname;
 
     class HostController {
       wormhole
