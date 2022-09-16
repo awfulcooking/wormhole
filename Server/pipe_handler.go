@@ -34,6 +34,9 @@ func (h PipeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer pipe.Close()
+	defer h.Controller.PipeClosedByClient(pipe.ID)
+
 	if err := pipe.Run(h.Controller); err != nil {
 		log.Println("pipe error:", err.Error())
 		ws.Close(websocket.StatusGoingAway, err.Error())

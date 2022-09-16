@@ -114,6 +114,13 @@ func (c *Controller) PipeFromClient(pipeID PipeID, data []byte, dataType DataTyp
 	})
 }
 
+func (c *Controller) PipeClosedByClient(id PipeID) {
+	c.Host.WriteControllerPacket(ControllerPacket{
+		PipeID: id,
+		State:  Closed,
+	})
+}
+
 func (c *Controller) Shutdown() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
