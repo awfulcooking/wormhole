@@ -14,6 +14,11 @@ func HumanNameGenerator() string {
 	return fmt.Sprintf("%s-%s-%s", adjective1, adjective2, noun)
 }
 
+func init() {
+	numPossibleNames := len(adjectives) * len(adjectives) * len(nouns)
+	println(numPossibleNames, "possible names")
+}
+
 // Copied from github.com/bojand/hri
 
 var adjectives = []string{"able", "afraid", "ancient", "angry", "average", "bad", "big", "bitter",
