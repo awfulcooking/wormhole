@@ -19,16 +19,32 @@ main {
   width: 100%;
   height: 100%;
 
-  padding: 30px;
+  padding: 5vh 5vw;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
-  background-color: #1b1b1b;
+  background-color: #2d2d2d;
   /* color: #fafafa; */
-  color: red;
+  color: lightgray;
+
+  cursor: default;
+  user-select: none;
 
   text-align: center;
 }
 
-h1 {
-  font-size: 110%;
+wormhole-name {
+  display: block;
+  margin: 0.5em;
+
+  color: #fff200;
+
+  font-size: 1.25em;
+  font-weight: bold;
+
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1em;
+  border-radius: 5px;
+
+  user-select: text;
+  cursor: text;
 }
