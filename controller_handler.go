@@ -25,7 +25,7 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		log.Printf("ControllerHandler accept error: %v", err)
+		log.Printf("controller accept error: %v", err)
 		return
 	}
 
@@ -48,19 +48,19 @@ func (h ControllerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer h.Pool.Delete(controller.Name)
-
-	controller.SendWelcome()
-	defer log.Println("end of controller handler")
 	defer controller.Shutdown()
+
+	log.Println(controller, "ready")
+	controller.SendWelcome()
 
 	for {
 		err = controller.ProcessNext()
 
 		if websocket.CloseStatus(err) == websocket.StatusNormalClosure {
-			log.Println(h, "host exited normally")
+			log.Println(controller, "host exited normally")
 			return
 		} else if err != nil {
-			log.Printf("%v error (%v): %v", h, r.RemoteAddr, err.Error())
+			log.Printf("%v error (%v): %v", controller, r.RemoteAddr, err.Error())
 			return
 		}
 	}
@@ -77,10 +77,8 @@ func (h *WebsocketJSONControllerHost) ReadControllerPacket() (ControllerPacket, 
 	var packet ControllerPacket
 
 	if _, buf, err := h.Read(context.Background()); err != nil {
-		log.Println("controller websocket packet read error")
 		return packet, err
 	} else if err = json.Unmarshal(buf, &packet); err != nil {
-		log.Println("json unmarshal error")
 		return packet, err
 	} else {
 		return packet, nil
@@ -103,6 +101,5 @@ func (h *WebsocketJSONControllerHost) write(buf []byte) error {
 }
 
 func (h *WebsocketJSONControllerHost) Close() error {
-	log.Println(h, "closing (server initiated)")
 	return h.Conn.Close(websocket.StatusNormalClosure, "closing")
 }

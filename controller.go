@@ -63,7 +63,7 @@ func (c *Controller) Process(packet ControllerPacket) error {
 		case Closed:
 			pipe.Close()
 		case "error":
-			msg := "host reported pipe error"
+			msg := "host reported connection error"
 			if packet.Data != nil {
 				msg = string(*packet.Data)
 			}
@@ -133,5 +133,5 @@ func (c *Controller) Shutdown() error {
 }
 
 func (c *Controller) String() string {
-	return "[controller " + c.Name + "]"
+	return "(" + c.Name + ")"
 }

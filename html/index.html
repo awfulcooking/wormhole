@@ -55,7 +55,7 @@
       }
 
       send(msg) {
-        console.debug("Send to control", msg);
+        console.debug("Send", msg);
         this.wormhole.send(JSON.stringify(msg));
       }
 
@@ -68,7 +68,7 @@
         });
 
         pipe.addEventListener("close", (e) => {
-          console.info("Downstream disconnected", e)
+          console.info("Pipe disconnected", pipeID, e)
           this.send({ pipeID, state: "closed" });
         });
 

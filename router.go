@@ -23,10 +23,11 @@ func NewRouter(cfg ServerConfig) *Router {
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := h.requestCount.Add(1)
 
-	log.Printf("[%d] Request to %s", id, r.URL)
-	defer log.Printf("[%d] Request finished (%s)", id, r.URL)
-
-	if r.Header.Get("Upgrade") != "websocket" {
+	if r.Header.Get("Upgrade") == "websocket" {
+		log.Printf("[%d] WebSocket to %s", id, r.URL)
+		defer log.Printf("[%d] WebSocket finished (%s)", id, r.URL)
+	} else {
+		log.Printf("[%d] Serving %s", id, r.URL)
 		h.ServeStatic(w, r)
 		return
 	}
